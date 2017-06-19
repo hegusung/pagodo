@@ -14,14 +14,12 @@ import time
 
 class Pagodo:
 
-    def __init__(self, domain, google_dorks, search_max, save_links, delay, jitter):
+    def __init__(self, domain, google_dorks, search_max, output_file, delay, jitter):
         self.domain = domain
         with open(google_dorks) as self.fp:
             self.google_dorks = self.fp.read().splitlines()
         self.search_max = search_max
-        self.save_links = save_links
-        if save_links:
-            self.log_file = 'pagodo_results_' + get_timestamp() + '.txt'
+        self.output_file = output_file
         self.delay = delay
 
         # Create an array of jitter values to add to delay, favoring longer search times.
@@ -62,8 +60,8 @@ class Pagodo:
             self.total_dorks += len(self.links)
 
             # Only save links with valid results to an output file
-            if self.save_links and (self.links):
-                f = open(self.log_file, 'a')
+            if self.output_file and (self.links):
+                f = open(self.output_file, 'a')
                 f.write('#: ' + dork + "\n")
                 for link in self.links:
                     f.write(link + "\n")
@@ -89,7 +87,7 @@ if __name__ == "__main__":
     parser.add_argument('-g', dest='google_dorks', action='store', required=True, help='File containing Google dorks, 1 per line.')
     parser.add_argument('-j', dest='jitter', action='store', type=float, default=1.5, help='jitter factor (multipled times delay value) added to randomize lookups times. Default: 1.50')
     parser.add_argument('-l', dest='search_max', action='store', type=int, default=1000, help='Maximum results to search (default 1000).')
-    parser.add_argument('-s', dest='save_links', action='store_true', default=False, help='Save the html links to pagodo_results__<TIMESTAMP>.txt file.')
+    parser.add_argument('-o', dest='output_file', action='store', default=None, help='Save the html links to the specified output file.')
     parser.add_argument('-e', dest='delay', action='store', type=float, default=180.0, help='Minimum delay (in seconds) between searches...jitter (up to [jitter X delay] value) is added to this value to randomize lookups. If it\'s too small Google may block your IP, too big and your search may take a while. Default: 180.0')
 
     args = parser.parse_args()
