@@ -32,43 +32,43 @@ class Pagodo:
     def go(self):
         i = 1
         for dork in self.google_dorks:
+            dork = dork.strip()
+            self.links = []  # Stores URLs with files, clear out for each dork
+
+            # Search for the links to collect
+            if self.domain:
+                query = dork + " site:" + self.domain
+            else:
+                query = dork
+
+            pause_time = self.delay + random.choice(self.jitter)
+            print("[*] Search ( " + str(i) + " / " + str(len(self.google_dorks)) + " ) for Google dork [ " + query + " ] and waiting " + str(pause_time) + " seconds between searches")
+
             try:
-                dork = dork.strip()
-                self.links = []  # Stores URLs with files, clear out for each dork
-
-                # Search for the links to collect
-                if self.domain:
-                    query = dork + " site:" + self.domain
-                else:
-                    query = dork
-
-                pause_time = self.delay + random.choice(self.jitter)
-                print("[*] Search ( " + str(i) + " / " + str(len(self.google_dorks)) + " ) for Google dork [ " + query + " ] and waiting " + str(pause_time) + " seconds between searches")
-
                 for url in google.search(query, start=0, stop=self.search_max, num=100, pause=pause_time, extra_params={'filter': '0'}, user_agent=google.get_random_user_agent()):
                     self.links.append(url)
-
-                # Since google.search method retreives URLs in batches of 100, ensure the file list only contains the requested amount
-                if len(self.links) > self.search_max:
-                    self.links = self.links[:-(len(self.links) - self.search_max)]
-
-                print("[*] Results: " + str(len(self.links)) + " sites found for Google dork: " + dork)
-                for foundDork in self.links:
-                    print(foundDork)
-
-                self.total_dorks += len(self.links)
-
-                # Only save links with valid results to an output file
-                if self.save_links and (self.links):
-                    f = open(self.log_file, 'a')
-                    f.write('#: ' + dork + "\n")
-                    for link in self.links:
-                        f.write(link + "\n")
-                    f.write("=" * 50 + "\n")
-                    f.close
-
             except:
                 print("[-] ERROR with dork: " + dork)
+
+
+            # Since google.search method retreives URLs in batches of 100, ensure the file list only contains the requested amount
+            if len(self.links) > self.search_max:
+                self.links = self.links[:-(len(self.links) - self.search_max)]
+
+            print("[*] Results: " + str(len(self.links)) + " sites found for Google dork: " + dork)
+            for foundDork in self.links:
+                print(foundDork)
+
+            self.total_dorks += len(self.links)
+
+            # Only save links with valid results to an output file
+            if self.save_links and (self.links):
+                f = open(self.log_file, 'a')
+                f.write('#: ' + dork + "\n")
+                for link in self.links:
+                    f.write(link + "\n")
+                f.write("=" * 50 + "\n")
+                f.close
 
             i += 1
 
@@ -87,10 +87,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Passive Google Dork - pagodo')
     parser.add_argument('-d', dest='domain', action='store', required=False, help='Domain to search for Google dork hits.')
     parser.add_argument('-g', dest='google_dorks', action='store', required=True, help='File containing Google dorks, 1 per line.')
-    parser.add_argument('-j', dest='jitter', action='store', type=float, default=.75, help='jitter factor (multipled times delay value) added to randomize lookups times. Default: 1.50')
-    parser.add_argument('-l', dest='search_max', action='store', type=int, default=100, help='Maximum results to search (default 100).')
+    parser.add_argument('-j', dest='jitter', action='store', type=float, default=1.5, help='jitter factor (multipled times delay value) added to randomize lookups times. Default: 1.50')
+    parser.add_argument('-l', dest='search_max', action='store', type=int, default=1000, help='Maximum results to search (default 1000).')
     parser.add_argument('-s', dest='save_links', action='store_true', default=False, help='Save the html links to pagodo_results__<TIMESTAMP>.txt file.')
-    parser.add_argument('-e', dest='delay', action='store', type=float, default=30.0, help='Minimum delay (in seconds) between searches...jitter (up to [jitter X delay] value) is added to this value to randomize lookups. If it\'s too small Google may block your IP, too big and your search may take a while. Default: 30.0')
+    parser.add_argument('-e', dest='delay', action='store', type=float, default=180.0, help='Minimum delay (in seconds) between searches...jitter (up to [jitter X delay] value) is added to this value to randomize lookups. If it\'s too small Google may block your IP, too big and your search may take a while. Default: 180.0')
 
     args = parser.parse_args()
 
